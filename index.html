@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>原稿用紙 行数カウンター</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#24313b;background:#f5f7f8}*{box-sizing:border-box}main{max-width:760px;margin:48px auto;padding:28px;background:white;border:1px solid #dce3e7;border-radius:16px}h1{font-size:1.5rem;margin:0 0 8px}p{color:#56636b;line-height:1.7}textarea{display:block;width:100%;min-height:230px;resize:vertical;padding:14px;font:1rem/1.8 inherit;border:1px solid #aebbc4;border-radius:9px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.stat{background:#f1f5f6;padding:15px 8px;border-radius:10px;text-align:center}.stat small{display:block;color:#56636b}.stat strong{font-size:2rem}.progress{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin:10px 0}.progress span{height:16px;background:#e2e8eb;border-radius:2px}.progress span.used{background:#159b87}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.warning{color:#b3261e;font-weight:700}button{padding:9px 16px;background:white;border:1px solid #aebbc4;border-radius:8px;cursor:pointer}button:hover{background:#f1f5f6}.note{font-size:.86rem}@media(max-width:500px){main{margin:12px;padding:18px}.stat strong{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<main>
+<h1>原稿用紙 行数カウンター</h1>
+<p>1行20マス・1枚20行の原稿用紙で、何行になるかを計算します。空行は数えません。</p>
+<textarea id="input" aria-label="作文を入力" placeholder="ここに作文を貼り付けてください"></textarea>
+<div class="stats" aria-live="polite">
+<div class="stat"><small>使用行数</small><strong id="lines">0</strong><small>行</small></div>
+<div class="stat"><small>文字数</small><strong id="chars">0</strong><small>文字</small></div>
+<div class="stat"><small>原稿用紙</small><strong id="sheets">0</strong><small>枚</small></div>
+</div>
+<div class="row"><strong>1枚目の使用状況</strong><span id="usage">0 / 20行</span></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<p class="warning" id="warning" aria-live="polite"></p>
+<div class="row"><p class="note">改行ごとに次の行から数えます。句読点の禁則処理や段落冒頭の字下げは考慮しません。</p><button id="clear" type="button">クリア</button></div>
+</main>
+<script>
+const input=document.getElementById('input');
+const progress=document.getElementById('progress');
+for(let i=0;i<20;i++)progress.appendChild(document.createElement('span'));
+function update(){
+ const paragraphs=input.value.split(/\r?\n/).filter(s=>s.trim().length>0);
+ const chars=paragraphs.reduce((sum,s)=>sum+Array.from(s).length,0);
+ const lines=paragraphs.reduce((sum,s)=>sum+Math.ceil(Array.from(s).length/20),0);
+ document.getElementById('chars').textContent=chars;
+ document.getElementById('lines').textContent=lines;
+ document.getElementById('sheets').textContent=Math.ceil(lines/20);
+ document.getElementById('usage').textContent=`${Math.min(lines,20)} / 20行`;
+ [...progress.children].forEach((el,i)=>el.classList.toggle('used',i<Math.min(lines,20)));
+ document.getElementById('warning').textContent=lines>20?`20行を${lines-20}行超えています。`:'';
+}
+input.addEventListener('input',update);
+document.getElementById('clear').addEventListener('click',()=>{input.value='';update();input.focus()});
+update();
+</script>
+</body>
+</html>
